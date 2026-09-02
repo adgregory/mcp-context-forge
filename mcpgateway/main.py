@@ -193,6 +193,7 @@ from mcpgateway.services.gateway_service import (
     GatewayLookupConflictError,
     GatewayNameConflictError,
     GatewayNotFoundError,
+    GatewayToolNameConflictError,
     test_server_handshake,
 )
 from mcpgateway.services.import_service import ConflictStrategy, ImportConflictError
@@ -7371,6 +7372,8 @@ async def set_gateway_state(
         raise HTTPException(status_code=403, detail=str(e))
     except GatewayNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except GatewayToolNameConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -7566,6 +7569,8 @@ async def register_gateway(
             return ORJSONResponse(content={"message": "Unable to process input"}, status_code=status.HTTP_400_BAD_REQUEST)
         if isinstance(ex, GatewayNameConflictError):
             return ORJSONResponse(content={"message": "Gateway name already exists"}, status_code=status.HTTP_409_CONFLICT)
+        if isinstance(ex, GatewayToolNameConflictError):
+            return ORJSONResponse(content={"message": str(ex)}, status_code=status.HTTP_409_CONFLICT)
         if isinstance(ex, GatewayDuplicateConflictError):
             return ORJSONResponse(content={"message": "Gateway already exists"}, status_code=status.HTTP_409_CONFLICT)
         if isinstance(ex, RuntimeError):
@@ -7704,6 +7709,8 @@ async def update_gateway(
             return ORJSONResponse(content={"message": "Unable to process input"}, status_code=status.HTTP_400_BAD_REQUEST)
         if isinstance(ex, GatewayNameConflictError):
             return ORJSONResponse(content={"message": "Gateway name already exists"}, status_code=status.HTTP_409_CONFLICT)
+        if isinstance(ex, GatewayToolNameConflictError):
+            return ORJSONResponse(content={"message": str(ex)}, status_code=status.HTTP_409_CONFLICT)
         if isinstance(ex, GatewayDuplicateConflictError):
             return ORJSONResponse(content={"message": "Gateway already exists"}, status_code=status.HTTP_409_CONFLICT)
         if isinstance(ex, RuntimeError):
